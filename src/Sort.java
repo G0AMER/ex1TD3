@@ -1,44 +1,128 @@
 import java.util.concurrent.SynchronousQueue;
 
 public class Sort extends Thread {
-    SynchronousQueue<Integer> O = new SynchronousQueue<Integer>();
-    int N;
-    SynchronousQueue<Integer> I = new SynchronousQueue<Integer>();
-    int i;
-    int[] Res;
 
-    public Sort(int i, SynchronousQueue<Integer> I, SynchronousQueue<Integer> O, int N) {
-        this.i = i;
+    private static int[] res;
+    private final SynchronousQueue<Integer> I;
+    private final SynchronousQueue<Integer> O;
+    private final int index;
+    private final int N;
+
+
+    Sort(int index, SynchronousQueue<Integer> I, SynchronousQueue<Integer> O, int N) {
+
         this.I = I;
+
         this.O = O;
+
+        this.index = index;
+
         this.N = N;
-        Res = new int[N];
+
+        res = new int[N];
+
     }
 
+
     @Override
+
     public void run() {
-        int min;
-        if (i == 0) {
-            int[] tab = {12, 0, 5, 8, 3};
-            min = tab[0];
-            for (int j = 1; j < N; j++) {
-                if (tab[j] < min) {
-                    try {
+
+        try {
+
+            // definition du minimum
+
+            int min;
+
+
+            // definition du tableau
+
+            int[] tab = {12, 0, 5, 8, 3, 15, 20, 1, 13, 17};
+
+
+            // cas1: index = 0
+
+            if (index == 0) {
+
+                min = tab[0];
+
+                for (int i = 1; i < N; i++) {
+
+                    if (tab[i] < min) {
+
+
                         O.put(min);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    min = tab[j];
-                } else {
-                    try {
+
+
+                        min = tab[i];
+
+                    } else {
+
                         O.put(tab[i]);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+
+
                     }
+
+                }
+
+                res[0] = min;
+
+            }
+
+
+            // cas2 : tous les threads sauf le dernier
+
+            else if (index > 0 && index < N - 1) {
+
+                min = I.take();
+
+
+                for (int i = 1; i < N - index; i++) {
+
+                    int k = I.take();
+
+                    if (k < min) {
+
+                        O.put(min);
+
+                        min = k;
+
+                    } else {
+
+                        O.put(k);
+
+                    }
+
+                    res[index] = min;
+
+                }
+
+
+            }
+
+
+            // cas3: index = n-1
+
+            else {
+
+                min = I.take();
+
+                res[index] = min;
+
+                for (int i = 0; i < N; i++) {
+
+                    System.out.println(res[i]);
+
                 }
 
             }
-            Res[i] = min;
+
+
+        } catch (InterruptedException e) {
+
+
         }
+
     }
+
 }
